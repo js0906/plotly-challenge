@@ -14,25 +14,38 @@ d3.json(url).then(function (data) {
     console.log(name);
   });
   barChart(data)
+  demoInfo(data);
 });
 
 function barChart(data) {
 
-  // Use sample_values as the values for the bar chart.
-  var labels = data.samples[0].otu_labels.slice(0, 10);
-  console.log(labels)
-  // get only top 10 otu ids for the plot OTU and reversing it. 
-  var OTU_top = (data.samples[0].otu_ids.slice(0, 10)).reverse();
+  var sel = document.getElementById('selDataset');
+  var id = sel.options[sel.selectedIndex].value
+  var samples = data.samples;
+  var resultArray = samples.filter(sampleObj => sampleObj.id == id);
+  var result = resultArray[0];
 
+
+
+  var otu_ids = result.otu_ids;
+  var otu_labels = result.otu_labels;
+  var sample_values = result.sample_values;
+
+  // Use sample_values as the values for the bar chart.
+  // var labels = data.samples[0].otu_labels.slice(0, 10);
+  // console.log(labels)
+  // get only top 10 otu ids for the plot OTU and reversing it. 
+  // var OTU_top = (data.samples[0].otu_ids.slice(0, 10)).reverse();
+  
 
   // Use otu_ids as the labels for the bar chart.
-  var sampleValues = data.samples[0].sample_values.slice(0, 10)
-  var labels = data.samples[0].otu_labels.slice(0, 10);
-  console.log(`OTU_labels: ${labels}`)
+  // var sampleValues = data.samples[0].sample_values.slice(0, 10).reverse();
+  // var labels = data.samples[0].otu_labels.slice(0, 10);
+  // console.log(`OTU_labels: ${labels}`)
   var trace = {
-    x: sampleValues,
-    y: OTU_top,
-    text: labels,
+    x: sample_values.slice(0, 10).reverse(),
+    y: otu_ids.slice(0, 10).reverse(),
+    text: otu_labels.slice(0, 10).reverse(),
     marker: {
       color: 'blue'
     },
@@ -41,12 +54,13 @@ function barChart(data) {
   };
 
   //Create the data variable
-  var data = [trace];
+  var data1 = [trace];
 
   var layout = {
     title: "Top 10 OTU",
     yaxis: {
-      tickmode: "linear",
+      // tickmode: "linear",
+      type: "category"
     },
     margin: {
       l: 100,
@@ -57,18 +71,22 @@ function barChart(data) {
   };
 
   // Build the bar chart
-  Plotly.newPlot("bar", data, layout);
+  Plotly.newPlot("bar", data1, layout);
+
+
+
   // The bubble chart
-  
-  var samples = data.samples;
-  var resultArray = samples.filter(sampleObj => sampleObj.id == sample);
-  var result = resultArray[0];
+  // var sel = document.getElementById('selDataset');
+  // var id = sel.options[sel.selectedIndex].value
+  // var samples = data.samples;
+  // var resultArray = samples.filter(sampleObj => sampleObj.id == id);
+  // var result = resultArray[0];
 
-  var data = [trace1]
 
-  var otu_ids = result.otu_ids;
-  var otu_labels = result.otu_labels;
-  var sample_values = result.sample_values;
+
+  // var otu_ids = result.otu_ids;
+  // var otu_labels = result.otu_labels;
+  // var sample_values = result.sample_values;
 
   console.log(sample_values);
 
@@ -85,7 +103,7 @@ function barChart(data) {
       }
     }
   ];
-
+  // var trace = [bubbleData]
   // Create the bubble chart layout
   var layout1 = {
     xaxis: { title: "OTU ID" },
@@ -99,8 +117,10 @@ function barChart(data) {
 };
 
 //Display the metadata in the demographic info section
-function demoInfo(id) {
-  d3.json("./static/js/samples.json").then((data) => {
+function demoInfo(data) {
+  // d3.json(url).then((data) => {
+    var sel = document.getElementById('selDataset');
+    var id = sel.options[sel.selectedIndex].value
     var metadata = data.metadata;
     console.log(metadata)
     var result = metadata.filter(meta => meta.id.toString() === id)[0];
@@ -113,12 +133,14 @@ function demoInfo(id) {
     Object.entries(result).forEach((key) => {
       demoInfo.append("h5").text(key[0].toUpperCase() + ": " + key[1] + "\n");
     });
-  });
+  // });
 }
 // Link the code above to the HTML
 function optionChanged(id) {
-  getPoints(id);
-  getDemoInfo(id);
+  d3.json(url).then((data) => {
+    barChart(data);
+    demoInfo(data);
+  });
 }
 
 // Create a function for the dropdown
@@ -132,8 +154,8 @@ function init() {
       dropdownMenu.append("option").text(name).property("value");
     });
     // Call on functions and print in the dropdown
-    getPoints(data.names[0]);
-    getdemoInfo(data.names[0]);
+    // getPoints(data.names[0]);
+    // demoInfo(data.names[0]);
   });
 }
 //Initialize the dashboard
